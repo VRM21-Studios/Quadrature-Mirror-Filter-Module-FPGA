@@ -290,12 +290,12 @@ module tb_qmf_synthesis_axis;
             @(posedge clk);
 
             // Low-band stimulus
-            phase_low   += (2.0 * pi / 50.0);
+            phase_low  = phase_low + (2.0 * pi / 50.0);
             sin_low_val  = ampl * $sin(phase_low);
             samp_low     = $rtoi(sin_low_val);
 
             // High-band stimulus
-            phase_high  += (2.0 * pi / 4.0);
+            phase_high = phase_high + (2.0 * pi / 4.0);
             sin_high_val = ampl * $sin(phase_high);
             samp_high    = $rtoi(sin_high_val);
 
