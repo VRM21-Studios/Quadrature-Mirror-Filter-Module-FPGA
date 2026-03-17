@@ -308,8 +308,8 @@ module tb_qmf_analysis_axis;
         for (i = 0; i < 1000; i = i + 1) begin
             @(posedge clk);
 
-            phase_low  += (2.0 * pi / 50.0);
-            phase_high += (2.0 * pi / 4.0);
+            phase_low  = phase_low + (2.0 * pi / 50.0);
+            phase_high = phase_high + (2.0 * pi / 4.0);
             sin_val     = (ampl_low  * $sin(phase_low)) +
                           (ampl_high * $sin(phase_high));
 
