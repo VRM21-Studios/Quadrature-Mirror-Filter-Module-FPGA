@@ -93,7 +93,7 @@ module tb_qmf_synthesis_core;
 
         // ---------------------------------------------------------------------
         // B. Load Johnston 8A Prototype Coefficients
-        //     Order: h7 ... h0 (flattened)
+        //    Order: h7 ... h0 (flattened)
         // ---------------------------------------------------------------------
         h0_coef_flat = {
              16'd308,
@@ -165,7 +165,7 @@ module tb_qmf_synthesis_core;
         phase = 0.0;
         for (i = 0; i < 400; i = i + 1) begin
             @(posedge clk);
-            phase   += (2.0 * pi / 20.0);
+            phase    = phase + (2.0 * pi / 20.0);
             din_low  = $rtoi(ampl * $sin(phase));
             din_high = $rtoi((ampl/2) * $cos(phase*2));
 
