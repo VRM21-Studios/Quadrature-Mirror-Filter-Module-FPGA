@@ -227,9 +227,9 @@ module tb_qmf_analysis_axis;
         f = $fopen("tb_data_qmf_analysis_axis.csv", "w");
         $fwrite(
             f,
-            "time_ns,din_sample,"
-            "dout_low_L,dout_low_R,"
-            "dout_high_L,dout_high_R\n"
+            "time_ns,din_sample,",
+            "dout_low_L,dout_low_R,",
+            "dout_high_L,dout_high_R"
         );
 
         rstn = 1'b0;
