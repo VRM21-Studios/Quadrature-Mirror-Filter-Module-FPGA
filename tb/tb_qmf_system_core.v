@@ -125,7 +125,7 @@ module tb_qmf_system_core;
         // Coefficient ordering:
         //   index 0  -> h0 (LSB)
         //   index 7  -> h7 (MSB)
-        h0_coef_flat = '0;
+        h0_coef_flat = 0;
         h0_coef_flat[0*16 +: 16] =  16'sd308;    // h(0)
         h0_coef_flat[1*16 +: 16] = -16'sd2315;   // h(1)
         h0_coef_flat[2*16 +: 16] =  16'sd2275;   // h(2)
@@ -140,7 +140,7 @@ module tb_qmf_system_core;
         // -----------------------------------------------------
         rstn = 1'b0;
         en   = 1'b0;
-        din  = '0;
+        din  = 0;
 
         phase_low  = 0.0;
         phase_high = 0.0;
@@ -164,8 +164,8 @@ module tb_qmf_system_core;
         for (i = 0; i < 1000; i = i + 1) begin
             @(posedge clk);
 
-            phase_low  += (2.0 * pi / 50.0);
-            phase_high += (2.0 * pi / 4.0);
+            phase_low  = phase_low + (2.0 * pi / 50.0);
+            phase_high = phase_high + (2.0 * pi / 4.0);
 
             sin_val = (ampl_low  * $sin(phase_low)) +
                       (ampl_high * $sin(phase_high));
