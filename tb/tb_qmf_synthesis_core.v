@@ -133,7 +133,7 @@ module tb_qmf_synthesis_core;
         $display("Scenario 1: Low-band stimulus only");
         for (i = 0; i < 200; i = i + 1) begin
             @(posedge clk);
-            phase   += (2.0 * pi / 40.0);
+            phase    = phase + (2.0 * pi / 40.0);
             din_low  = $rtoi(ampl * $sin(phase));
             din_high = 0;
 
@@ -149,7 +149,7 @@ module tb_qmf_synthesis_core;
         phase = 0.0;
         for (i = 0; i < 200; i = i + 1) begin
             @(posedge clk);
-            phase   += (2.0 * pi / 10.0);
+            phase    = phase + (2.0 * pi / 10.0);
             din_low  = 0;
             din_high = $rtoi(ampl * $sin(phase));
 
