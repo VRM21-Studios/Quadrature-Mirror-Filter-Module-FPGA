@@ -104,6 +104,7 @@ module tb_qmf_synthesis_axis;
     // Prototype coefficients & readback buffer
     reg signed [15:0] coeffs [0:NTAPS-1];
     reg [31:0]        read_data_temp;
+    reg [11:0]        axi_addr_temp;
 
     // ========================================================================
     // 4. DUT INSTANTIATION
@@ -266,12 +267,15 @@ module tb_qmf_synthesis_axis;
         // Phase 1: AXI-Lite configuration
         // -----------------------------------------------------
         $display("[AXI-LITE] Writing FIR coefficients...");
-        for (i = 0; i < NTAPS; i = i + 1)
-            axi_write((i + 1) * 4, {16'd0, coeffs[i]});
+        for (i = 0; i < NTAPS; i = i + 1) begin
+            axi_addr_temp = (i + 1) * 4;
+            axi_write(axi_addr_temp, {16'd0, coeffs[i]});
+        end
 
         $display("[AXI-LITE] Readback verification...");
         for (i = 0; i < NTAPS; i = i + 1) begin
-            axi_read((i + 1) * 4, read_data_temp);
+            axi_addr_temp = (i + 1) * 4;
+            axi_read(axi_addr_temp, read_data_temp);
             if (read_data_temp[15:0] !== coeffs[i])
                 $display("ERROR: Coefficient mismatch at index %0d", i);
         end
@@ -306,10 +310,8 @@ module tb_qmf_synthesis_axis;
             s_axis_low_tvalid  = 1'b1;
             s_axis_high_tvalid = 1'b1;
 
-            if (i == 999) begin
-                s_axis_low_tlast  = 1'b1;
-                s_axis_high_tlast = 1'b1;
-            end
+            s_axis_low_tlast  = (i == 999) ? 1'b1 : 1'b0;
+            s_axis_high_tlast = (i == 999) ? 1'b1 : 1'b0;
 
             wait (s_axis_low_tready && s_axis_high_tready);
 
