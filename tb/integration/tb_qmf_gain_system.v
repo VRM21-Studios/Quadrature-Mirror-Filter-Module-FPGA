@@ -1,24 +1,24 @@
 `timescale 1ns/1ps
 
 /**
- * Testbench: QMF Analysis → Dual Gain → QMF Synthesis (AXI-Stream)
+ * Testbench: QMF Analysis -> Dual Gain -> QMF Synthesis (AXI-Stream)
  *
  * Signal Flow:
  *
- *   AXI-Stream Source
- *          |
- *          v
- *     QMF Analysis
- *        |      |
- *        |      +--> High Band → Gain High
- *        |
- *        +--> Low Band  → Gain Low
- *                 |
- *                 v
- *           QMF Synthesis
- *                 |
- *                 v
- *           AXI-Stream Sink
+ * AXI-Stream Source
+ * |
+ * v
+ * QMF Analysis
+ * |      |
+ * |      +--> High Band -> Gain High
+ * |
+ * +--> Low Band  -> Gain Low
+ * |
+ * v
+ * QMF Synthesis
+ * |
+ * v
+ * AXI-Stream Sink
  *
  * Purpose:
  * - Validate functional correctness of a full subband DSP chain
@@ -62,25 +62,25 @@ module tb_qmf_gain_system;
     // 3. AXI-STREAM SIGNALS (EXPLICIT WIRES)
     // =====================================================================
 
-    // Source → Analysis
+    // Source -> Analysis
     reg  [31:0] src_tdata;
     reg         src_tvalid;
     reg         src_tlast;
     wire        src_tready;
 
-    // Analysis → Gain (Low)
+    // Analysis -> Gain (Low)
     wire [31:0] ana_low_tdata;
     wire        ana_low_tvalid;
     wire        ana_low_tlast;
     wire        ana_low_tready;
 
-    // Analysis → Gain (High)
+    // Analysis -> Gain (High)
     wire [31:0] ana_high_tdata;
     wire        ana_high_tvalid;
     wire        ana_high_tlast;
     wire        ana_high_tready;
 
-    // Gain → Synthesis
+    // Gain -> Synthesis
     wire [31:0] gain_low_tdata;
     wire        gain_low_tvalid;
     wire        gain_low_tlast;
@@ -91,7 +91,7 @@ module tb_qmf_gain_system;
     wire        gain_high_tlast;
     wire        gain_high_tready;
 
-    // Synthesis → Sink
+    // Synthesis -> Sink
     wire [31:0] final_tdata;
     wire        final_tvalid;
     wire        final_tlast;
@@ -117,30 +117,30 @@ module tb_qmf_gain_system;
     // --- Analysis AXI-Lite ---
     wire [ADDRW-1:0] ana_awaddr  = tb_awaddr;
     wire [31:0]      ana_wdata   = tb_wdata;
-    wire             ana_awvalid = (target_sel == 0) ? tb_awvalid : 1'b0;
-    wire             ana_wvalid  = (target_sel == 0) ? tb_wvalid  : 1'b0;
+    wire             ana_awvalid = (target_sel == 2'd0) ? tb_awvalid : 1'b0;
+    wire             ana_wvalid  = (target_sel == 2'd0) ? tb_wvalid  : 1'b0;
     wire             ana_bready  = tb_bready;
     wire             ana_awready, ana_wready, ana_bvalid;
 
     // --- Synthesis AXI-Lite ---
     wire [ADDRW-1:0] syn_awaddr  = tb_awaddr;
     wire [31:0]      syn_wdata   = tb_wdata;
-    wire             syn_awvalid = (target_sel == 1) ? tb_awvalid : 1'b0;
-    wire             syn_wvalid  = (target_sel == 1) ? tb_wvalid  : 1'b0;
+    wire             syn_awvalid = (target_sel == 2'd1) ? tb_awvalid : 1'b0;
+    wire             syn_wvalid  = (target_sel == 2'd1) ? tb_wvalid  : 1'b0;
     wire             syn_bready  = tb_bready;
     wire             syn_awready, syn_wready, syn_bvalid;
 
     // --- Gain Low AXI-Lite ---
     wire [3:0] gain_l_awaddr  = tb_awaddr[3:0];
-    wire       gain_l_awvalid = (target_sel == 2) ? tb_awvalid : 1'b0;
-    wire       gain_l_wvalid  = (target_sel == 2) ? tb_wvalid  : 1'b0;
+    wire       gain_l_awvalid = (target_sel == 2'd2) ? tb_awvalid : 1'b0;
+    wire       gain_l_wvalid  = (target_sel == 2'd2) ? tb_wvalid  : 1'b0;
     wire       gain_l_bready  = tb_bready;
     wire       gain_l_awready, gain_l_wready, gain_l_bvalid;
 
     // --- Gain High AXI-Lite ---
     wire [3:0] gain_h_awaddr  = tb_awaddr[3:0];
-    wire       gain_h_awvalid = (target_sel == 3) ? tb_awvalid : 1'b0;
-    wire       gain_h_wvalid  = (target_sel == 3) ? tb_wvalid  : 1'b0;
+    wire       gain_h_awvalid = (target_sel == 2'd3) ? tb_awvalid : 1'b0;
+    wire       gain_h_wvalid  = (target_sel == 2'd3) ? tb_wvalid  : 1'b0;
     wire       gain_h_bready  = tb_bready;
     wire       gain_h_awready, gain_h_wready, gain_h_bvalid;
 
@@ -261,7 +261,8 @@ module tb_qmf_gain_system;
         begin
             src_tdata  <= data;
             src_tvalid <= 1'b1;
-            do @(posedge clk); while (!src_tready);
+            @(posedge clk);
+            while (!src_tready) @(posedge clk);
             src_tvalid <= 1'b0;
         end
     endtask
@@ -272,29 +273,29 @@ module tb_qmf_gain_system;
             target_sel = target;
             tb_awaddr  = addr;
             tb_wdata   = data;
-            tb_awvalid = 1;
-            tb_wvalid  = 1;
-            tb_bready  = 1;
+            tb_awvalid = 1'b1;
+            tb_wvalid  = 1'b1;
+            tb_bready  = 1'b1;
 
             case (target)
-                0: wait(ana_awready && ana_wready);
-                1: wait(syn_awready && syn_wready);
-                2: wait(gain_l_awready && gain_l_wready);
-                3: wait(gain_h_awready && gain_h_wready);
+                2'd0: wait (ana_awready && ana_wready);
+                2'd1: wait (syn_awready && syn_wready);
+                2'd2: wait (gain_l_awready && gain_l_wready);
+                2'd3: wait (gain_h_awready && gain_h_wready);
             endcase
 
             @(posedge clk);
-            tb_awvalid = 0;
-            tb_wvalid  = 0;
+            tb_awvalid = 1'b0;
+            tb_wvalid  = 1'b0;
 
             case (target)
-                0: wait(ana_bvalid);
-                1: wait(syn_bvalid);
-                2: wait(gain_l_bvalid);
-                3: wait(gain_h_bvalid);
+                2'd0: wait (ana_bvalid);
+                2'd1: wait (syn_bvalid);
+                2'd2: wait (gain_l_bvalid);
+                2'd3: wait (gain_h_bvalid);
             endcase
 
-            tb_bready = 0;
+            tb_bready = 1'b0;
         end
     endtask
 
@@ -303,39 +304,51 @@ module tb_qmf_gain_system;
     // =====================================================================
     integer i;
     real sin_low, sin_high;
-    shortint wave;
-    shortint j8a[8] = '{308, -2315, 2275, 16056, 16056, 2275, -2315, 308};
+    reg signed [15:0] wave;
+    reg signed [15:0] j8a [0:7];
+    reg [ADDRW-1:0] axi_addr_temp;
 
     initial begin
-        clk = 0;
-        rstn = 0;
-        src_tvalid = 0;
-        tb_awvalid = 0;
-        tb_wvalid  = 0;
-        tb_bready  = 0;
-        target_sel = 0;
+        clk = 1'b0;
+        rstn = 1'b0;
+        src_tvalid = 1'b0;
+        tb_awvalid = 1'b0;
+        tb_wvalid  = 1'b0;
+        tb_bready  = 1'b0;
+        target_sel = 2'd0;
 
-        #100 rstn = 1;
+        // Johnston 8A array initialization
+        j8a[0] =  16'sd308;
+        j8a[1] = -16'sd2315;
+        j8a[2] =  16'sd2275;
+        j8a[3] =  16'sd16056;
+        j8a[4] =  16'sd16056;
+        j8a[5] =  16'sd2275;
+        j8a[6] = -16'sd2315;
+        j8a[7] =  16'sd308;
+
+        #100 rstn = 1'b1;
         #100;
 
         // Configure QMF coefficients
-        for (i = 0; i < 8; i++) begin
-            axi_write((i+1)*4, {16'd0, j8a[i]}, 0);
-            axi_write((i+1)*4, {16'd0, j8a[i]}, 1);
+        for (i = 0; i < 8; i = i + 1) begin
+            axi_addr_temp = (i + 1) * 4;
+            axi_write(axi_addr_temp, {16'd0, j8a[i]}, 2'd0);
+            axi_write(axi_addr_temp, {16'd0, j8a[i]}, 2'd1);
         end
 
-        axi_write(0, 32'h1, 0); // Enable analysis
-        axi_write(0, 32'h1, 1); // Enable synthesis
+        axi_write(12'd0, 32'h1, 2'd0); // Enable analysis
+        axi_write(12'd0, 32'h1, 2'd1); // Enable synthesis
 
         // Configure gains
-        axi_write(4, 32'h0000_2000, 2); // Gain low
-        axi_write(0, 32'h1, 2);
+        axi_write(12'd4, 32'h0000_2000, 2'd2); // Gain low
+        axi_write(12'd0, 32'h1, 2'd2);
 
-        axi_write(4, 32'h0000_0400, 3); // Gain high
-        axi_write(0, 32'h1, 3);
+        axi_write(12'd4, 32'h0000_0400, 2'd3); // Gain high
+        axi_write(12'd0, 32'h1, 2'd3);
 
         // Stream samples
-        for (i = 0; i < 500; i++) begin
+        for (i = 0; i < 500; i = i + 1) begin
             sin_low  = 6000.0 * $sin(2.0 * 3.14159 * i / 40.0);
             sin_high = 4000.0 * $sin(2.0 * 3.14159 * i / 6.0);
             wave = $rtoi(sin_low + sin_high);
