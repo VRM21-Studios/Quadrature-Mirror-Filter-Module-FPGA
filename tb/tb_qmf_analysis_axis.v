@@ -229,7 +229,7 @@ module tb_qmf_analysis_axis;
             f,
             "time_ns,din_sample,",
             "dout_low_L,dout_low_R,",
-            "dout_high_L,dout_high_R"
+            "dout_high_L,dout_high_R\n"
         );
 
         rstn = 1'b0;
