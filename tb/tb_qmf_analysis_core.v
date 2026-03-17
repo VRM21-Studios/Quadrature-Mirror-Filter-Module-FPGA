@@ -129,7 +129,7 @@ module tb_qmf_analysis_core;
         // --------------------------------------------------------------------
         rstn = 1'b0;
         en   = 1'b0;
-        din  = '0;
+        din  = 0;
 
         phase_low  = 0.0;
         phase_high = 0.0;
