@@ -7,13 +7,13 @@
 // implemented with AXI wrappers:
 //
 //   AXI-Stream In
-//        |
+//       |
 //   qmf_analysis_axis
-//        |
+//       |
 //   (low / high subbands)
-//        |
+//       |
 //   qmf_synthesis_axis
-//        |
+//       |
 //   AXI-Stream Out
 //
 // Verification scenario:
@@ -106,6 +106,9 @@ module tb_qmf_axis;
     real sin_low;
     real sin_high;
     reg signed [15:0] wave_part;
+
+    // Temp variable for address calculation
+    reg [ADDRW-1:0] axi_addr_temp;
 
     // Johnston 8A coefficients (Q15)
     reg signed [15:0] j8a [0:NTAPS-1];
@@ -216,7 +219,10 @@ module tb_qmf_axis;
 
     // AXI-Lite write transaction
     // target: 0 = analysis, 1 = synthesis
-    task axi_write(input [ADDRW-1:0] addr, input [31:0] data, input target);
+    task axi_write;
+        input [ADDRW-1:0] addr;
+        input [31:0] data;
+        input target;
         begin
             @(posedge s_axi_aclk);
             axi_addr  <= addr;
@@ -244,7 +250,10 @@ module tb_qmf_axis;
     endtask
 
     // AXI-Lite read transaction
-    task axi_read(input [ADDRW-1:0] addr, output [31:0] val, input target);
+    task axi_read;
+        input  [ADDRW-1:0] addr;
+        output [31:0] val;
+        input  target;
         begin
             @(posedge s_axi_aclk);
             axi_addr <= addr;
@@ -312,13 +321,17 @@ module tb_qmf_axis;
         // -----------------------------------------------------
         // Configuration: analysis + synthesis
         // -----------------------------------------------------
-        for (i = 0; i < NTAPS; i = i + 1)
-            axi_write((i+1)*4, {16'd0, j8a[i]}, 0);
-        axi_write(0, 32'd1, 0); // enable analysis
+        for (i = 0; i < NTAPS; i = i + 1) begin
+            axi_addr_temp = (i+1)*4;
+            axi_write(axi_addr_temp, {16'd0, j8a[i]}, 0);
+        end
+        axi_write(12'd0, 32'd1, 0); // enable analysis
 
-        for (i = 0; i < NTAPS; i = i + 1)
-            axi_write((i+1)*4, {16'd0, j8a[i]}, 1);
-        axi_write(0, 32'd1, 1); // enable synthesis
+        for (i = 0; i < NTAPS; i = i + 1) begin
+            axi_addr_temp = (i+1)*4;
+            axi_write(axi_addr_temp, {16'd0, j8a[i]}, 1);
+        end
+        axi_write(12'd0, 32'd1, 1); // enable synthesis
 
         #200;
 
@@ -332,7 +345,7 @@ module tb_qmf_axis;
 
             s_axis_tdata  <= {wave_part, wave_part};
             s_axis_tvalid <= 1'b1;
-            s_axis_tlast  <= (i == 999);
+            s_axis_tlast  <= (i == 999) ? 1'b1 : 1'b0;
 
             @(posedge clk);
             while (!s_axis_tready)
